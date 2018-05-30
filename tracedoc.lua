@@ -1,10 +1,13 @@
 local next = next
-local pairs = pairs
 local setmetatable = setmetatable
 local getmetatable = getmetatable
 local type = type
 local rawset = rawset
 local table = table
+local compat = require("compat")
+local pairs = compat.pairs
+local len = compat.len
+local load = compat.load
 
 local tracedoc = {}
 local NULL = setmetatable({} , { __tostring = function() return "NULL" end })	-- nil
@@ -78,7 +81,7 @@ end
 local function doc_len(doc)
 	local len = tracedoc_len[doc]
 	if len == nil then
-		len = #doc._lastversion
+		len = len(doc._lastversion)
 		tracedoc_len[doc] = len
 	end
 	if len == 0 then
@@ -270,7 +273,7 @@ local function genkey(keys, key)
 end
 
 local function insert_tag(tags, tag, item, n)
-	local v = { table.unpack(item, n, #item) }
+	local v = { table.unpack(item, n, len(item)) }
 	local t = tags[tag]
 	if not t then
 		tags[tag] = { v }
@@ -296,7 +299,7 @@ function tracedoc.changeset(map)
 			v = insert_tag(set.tags, "", v, 1)
 		end
 
-		local n = #v
+		local n = len(v)
 		assert(n >=2 and type(v[1]) == "function")
 		if n == 2 then
 			local f = v[1]
@@ -315,7 +318,7 @@ function tracedoc.changeset(map)
 			end
 		else
 			table.insert(set.mapping, { table.unpack(v) })
-			for i = 2, #v do
+			for i = 2, len(v) do
 				genkey(set.keys, v[i])
 			end
 		end
@@ -337,7 +340,7 @@ local function do_funcs(doc, funcs, v)
 end
 
 local function do_mapping(doc, mapping, changes, keys, args)
-	local n = #mapping
+	local n = len(mapping)
 	for i=2,n do
 		local key = mapping[i]
 		local v = changes[key]
@@ -379,7 +382,7 @@ function tracedoc.mapchange(doc, set, c)
 	local keys = set.keys
 	local tmp = {}
 	for _, mapping in ipairs(set.mapping) do
-		for i=2,#mapping do
+		for i=2,len(mapping) do
 			local key = mapping[i]
 			if changes[key] ~= nil then
 				do_mapping(doc, mapping, changes, keys, tmp)
@@ -396,7 +399,7 @@ function tracedoc.mapupdate(doc, set, filter_tag)
 	for tag, items in pairs(set.tags) do
 		if tag == filter_tag or filter_tag == nil then
 			for _, mapping in ipairs(items) do
-				local n = #mapping
+				local n = len(mapping)
 				for i=2,n do
 					local key = mapping[i]
 					local v = keys[key](doc)
