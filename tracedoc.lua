@@ -6,6 +6,7 @@ local rawset = rawset
 local table = table
 local compat = require("compat")
 local pairs = compat.pairs
+local ipairs = compat.ipairs
 local table_len = compat.len
 local load = compat.load
 
@@ -51,6 +52,17 @@ end
 
 local function doc_pairs(doc)
 	return doc_next, doc
+end
+
+local function doc_ipairs(doc)
+	local function iter(doc, var)
+		var = var + 1
+		local val = doc[var]
+		if val ~= nil then
+		   return var, val
+		end
+	end
+	return iter, doc, 0
 end
 
 local function find_length_after(doc, idx)
@@ -156,6 +168,7 @@ local doc_mt = {
 	__newindex = doc_change,
 	__index = doc_read,
 	__pairs = doc_pairs,
+	__ipairs = doc_ipairs,
 	__len = doc_len,
 	__metatable = tracedoc_type,	-- avoid copy by ref
 }
