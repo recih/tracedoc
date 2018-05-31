@@ -173,6 +173,10 @@ local doc_mt = {
 	__metatable = tracedoc_type,	-- avoid copy by ref
 }
 
+tracedoc.pairs = doc_pairs
+tracedoc.ipairs = doc_ipairs
+tracedoc.len = doc_len
+
 function tracedoc.new(init)
 	local doc = {
 		_dirty = false,
