@@ -102,7 +102,7 @@ local lua_version = tonumber(_VERSION:match("[%d%.]+"))
 
 compat.pairs = lua_version < 5.2 and compat_pairs or pairs
 compat.ipairs = lua_version < 5.2 and compat_ipairs or ipairs
-compat.len = compat_len
+compat.len = lua_version < 5.2 and compat_len or function(t) return #t end
 compat.load = lua_version < 5.2 and compat_load or load
 if not table.unpack then
     table.unpack = unpack
