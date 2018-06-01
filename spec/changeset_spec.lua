@@ -61,7 +61,7 @@ describe("changeset tests", function()
                 "level",
             },
             {
-                -- no tag
+                "HP",
                 create_spy("hp", function(doc, hp)
                     _print("hp = " .. hp)
                 end),
@@ -96,28 +96,34 @@ describe("changeset tests", function()
                 "name",
                 "title",
             },
+            {
+                -- no tag
+                create_spy("no_tag", function(doc, hp)
+                end),
+                "hp",
+            },
         }
 
         tracedoc.mapchange(doc, mapping)
         assert.spy(spies.level).was_called_with(doc, plain_data.level)
         assert.spy(spies.hp).was_called_with(doc, plain_data.hp)
+        assert.spy(spies.hp_max).was_called_with(doc, plain_data.hp_max, nil)
         assert.spy(spies.name).was_called_with(doc, plain_data.name, plain_data.title)
-        assert.are.same(get_print_content(), trim_lines(
-            [[level = 10
-            hp = 100
-            hp_max = 100
-            name = Player]]))
-        clear_print_buf()
+        clear_print_buf();
 
-        doc.title = "Super Man"
         doc.hp = doc.hp + 10
         tracedoc.mapchange(doc, mapping)
         assert.spy(spies.hp).was_called_with(doc, plain_data.hp + 10)
-        assert.spy(spies.name).was_called_with(doc, plain_data.name, "Super Man")        
         assert.are.same(get_print_content(), trim_lines(
-            [[hp = 110
-            name = Player - Super Man]]))
-        clear_print_buf()
+            [[hp = 110]]))
+        clear_print_buf();
+
+        doc.title = "Super Man"
+        tracedoc.mapchange(doc, mapping)
+        assert.spy(spies.name).was_called_with(doc, plain_data.name, "Super Man")
+        assert.are.same(get_print_content(), trim_lines(
+            [[name = Player - Super Man]]))
+        clear_print_buf();     
 
         doc.items = {1, 2, 3}
         tracedoc.mapchange(doc, mapping)
@@ -142,10 +148,8 @@ describe("changeset tests", function()
 
         -- filter no tag
         tracedoc.mapupdate(doc, mapping, "")
-        assert.spy(spies.hp).was_called()
-        assert.are.same(get_print_content(), trim_lines(
-            [[hp = 110]]))
-        clear_print_buf()
+        assert.spy(spies.no_tag).was_called()
+        clear_print_buf();
 
         -- filter all tag
         tracedoc.mapupdate(doc, mapping)
