@@ -154,4 +154,31 @@ describe("changeset tests", function()
         assert.spy(spies.item).was_called()
         assert.spy(spies.name).was_called()
     end)
+    
+    test("support for reading a non-exist field", function()
+        local mapping = tracedoc.changeset {
+            {
+                "HP_MAX",
+                create_spy("hp_max", function(doc, hp_max, hp_max_modify)
+                    hp_max_modify = hp_max_modify or 0
+                    _print("hp_max = " .. hp_max + hp_max_modify)
+                end),
+                "hp_max",
+                "buff.hp_max_modify",   -- not exist yet
+            },
+        }
+
+        tracedoc.mapchange(doc, mapping)
+        assert.spy(spies.hp_max).was_called()
+        assert.are.same(get_print_content(), trim_lines(
+            [[hp_max = 100]]))
+        clear_print_buf();
+
+        doc.buff = { hp_max_modify = 100 }  -- buff.hp_max_modify added
+        tracedoc.mapchange(doc, mapping)
+        assert.spy(spies.hp_max).was_called()
+        assert.are.same(get_print_content(), trim_lines(
+            [[hp_max = 200]]))
+        clear_print_buf();
+    end)
 end)

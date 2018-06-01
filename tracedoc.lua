@@ -286,7 +286,13 @@ local function genkey(keys, key)
 	end
 	key = key:gsub("(%.)(%d+)","[%2]")
 	key = key:gsub("^(%d+)","[%1]")
-	keys[key] = assert(load ("return function(doc) return doc.".. key .." end"))()
+	local code = [[return function(doc)
+		local success, ret = pcall(function(doc)
+			return doc.%s
+		end, doc)
+		return success and ret or nil 
+	end]]
+	keys[key] = assert(load(code:format(key)))()
 end
 
 local function insert_tag(tags, tag, item, n)
