@@ -173,4 +173,24 @@ describe("basic tests", function()
         assert.are.equal(changes["pet"], doc.pet)
         assert.are.equal(changes["pet"].name, "cat")
     end)
+
+    test("_dirty state", function()
+        assert.is_truthy(doc._dirty)
+
+        -- not dirty after commit
+        tracedoc.commit(doc)
+        assert.is_falsy(doc._dirty)
+
+        -- assign a same value also makes doc dirty
+        doc.level = 10
+        assert.is_truthy(doc._dirty)
+
+        doc.hp = 100
+        assert.is_truthy(doc._dirty)
+        doc.level = 11
+        assert.is_truthy(doc._dirty)
+
+        tracedoc.commit(doc)
+        assert.is_falsy(doc._dirty)
+    end)
 end)
