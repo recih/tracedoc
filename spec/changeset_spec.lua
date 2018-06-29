@@ -216,4 +216,15 @@ describe("changeset tests", function()
             [[mapping2: hp = 100]]))
         clear_print_buf()
     end)
+
+    test("for issue #4", function()
+        local doc = tracedoc.new {d = true, e = 1}
+        tracedoc.commit(doc)
+        local mapping = tracedoc.changeset {
+            { create_spy("issue#4", function(doc, d, e) _print("changed") end), "d", "e" }
+        }
+        doc.d = false
+        tracedoc.mapchange(doc, mapping)
+        assert.spy(spies["issue#4"]).was_called()
+    end)
 end)
