@@ -107,7 +107,7 @@ describe("changeset tests", function()
             hp = 100
             hp_max = 100
             name = Player]]))
-        clear_print_buf();
+        clear_print_buf()
 
         doc.title = "Super Man"
         doc.hp = doc.hp + 10
@@ -117,35 +117,35 @@ describe("changeset tests", function()
         assert.are.same(get_print_content(), trim_lines(
             [[hp = 110
             name = Player - Super Man]]))
-        clear_print_buf();
+        clear_print_buf()
 
         doc.items = {1, 2, 3}
         tracedoc.mapchange(doc, mapping)
         assert.spy(spies.item).was_called()
         assert.are.same(get_print_content(), trim_lines(
             [[items count = 3]]))
-        clear_print_buf();
+        clear_print_buf()
 
         doc.buff = { hp_max_modify = 100}
         tracedoc.mapchange(doc, mapping)
         assert.spy(spies.hp_max).was_called()
         assert.are.same(get_print_content(), trim_lines(
             [[hp_max = 200]]))
-        clear_print_buf();
+        clear_print_buf()
 
         -- filter LEVEL tag
         tracedoc.mapupdate(doc, mapping, "LEVEL")
         assert.spy(spies.level).was_called()
         assert.are.same(get_print_content(), trim_lines(
             [[level = 10]]))
-        clear_print_buf();
+        clear_print_buf()
 
         -- filter no tag
         tracedoc.mapupdate(doc, mapping, "")
         assert.spy(spies.hp).was_called()
         assert.are.same(get_print_content(), trim_lines(
             [[hp = 110]]))
-        clear_print_buf();
+        clear_print_buf()
 
         -- filter all tag
         tracedoc.mapupdate(doc, mapping)
@@ -172,13 +172,13 @@ describe("changeset tests", function()
         assert.spy(spies.hp_max).was_called()
         assert.are.same(get_print_content(), trim_lines(
             [[hp_max = 100]]))
-        clear_print_buf();
+        clear_print_buf()
 
         doc.buff = { hp_max_modify = 100 }  -- buff.hp_max_modify added
         tracedoc.mapchange(doc, mapping)
         assert.spy(spies.hp_max).was_called()
         assert.are.same(get_print_content(), trim_lines(
             [[hp_max = 200]]))
-        clear_print_buf();
+        clear_print_buf()
     end)
 end)
