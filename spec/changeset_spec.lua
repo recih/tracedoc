@@ -181,4 +181,39 @@ describe("changeset tests", function()
             [[hp_max = 200]]))
         clear_print_buf()
     end)
+
+    test("support for apply changes to multiple changesets", function()
+        local mapping1 = tracedoc.changeset {
+            {
+                "HP",
+                create_spy("hp1", function(doc, hp)
+                    _print("mapping1: hp = " .. hp)
+                end),
+                "hp",
+            },
+        }
+
+        local mapping2 = tracedoc.changeset {
+            {
+                "HP",
+                create_spy("hp2", function(doc, hp)
+                    _print("mapping2: hp = " .. hp)
+                end),
+                "hp",
+            },
+        }
+
+        local changes = tracedoc.commit(doc, {})
+        tracedoc.mapchange_without_commit(doc, mapping1, changes)
+        assert.spy(spies.hp1).was_called()
+        assert.are.same(get_print_content(), trim_lines(
+            [[mapping1: hp = 100]]))
+        clear_print_buf()
+
+        tracedoc.mapchange_without_commit(doc, mapping2, changes)
+        assert.spy(spies.hp2).was_called()
+        assert.are.same(get_print_content(), trim_lines(
+            [[mapping2: hp = 100]]))
+        clear_print_buf()
+    end)
 end)

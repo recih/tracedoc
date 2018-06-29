@@ -377,8 +377,11 @@ local function do_mapping(doc, mapping, changes, keys, args)
 	mapping[1](doc, table.unpack(args,1,n-1))
 end
 
-function tracedoc.mapchange(doc, set, c)
-	local changes = tracedoc.commit(doc, c or {})
+local function _mapchange(doc, set, c, skip_commit)
+	local changes = c or {}
+	if not skip_commit then
+		changes = tracedoc.commit(doc, changes)
+	end
 	local changes_n = changes._n or 0
 	if changes_n == 0 then
 		return changes
@@ -414,6 +417,14 @@ function tracedoc.mapchange(doc, set, c)
 		end
 	end
 	return changes
+end
+
+function tracedoc.mapchange(doc, set, c)
+	return _mapchange(doc, set, c)
+end
+
+function tracedoc.mapchange_without_commit(doc, set, changes)
+	return _mapchange(doc, set, changes, true)
 end
 
 function tracedoc.mapupdate(doc, set, filter_tag)
