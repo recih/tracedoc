@@ -193,4 +193,19 @@ describe("basic tests", function()
         tracedoc.commit(doc)
         assert.is_falsy(doc._dirty)
     end)
+
+    test("sub tracedoc", function()
+        tracedoc.commit(doc)
+
+        doc.sub_doc = {
+            name = "test"
+        }
+
+        local sub_changes = tracedoc.commit(doc.sub_doc, {})
+        assert.are.equal(sub_changes.name, "test")
+
+        -- sub doc changes has been commited. so parent doc changes nothing.
+        local changes = tracedoc.commit(doc, {})
+        assert.are.same(changes, {})
+    end)
 end)
