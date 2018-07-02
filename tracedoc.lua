@@ -215,11 +215,13 @@ function tracedoc.dump(doc)
 	return string.format("last [%s]\nchanges [%s]\nkeys [%s]",table.concat(last, " "), table.concat(changes," "), table.concat(keys," "))
 end
 
-function tracedoc.commit(doc, result, prefix)
+local function _commit(is_keep_dirty, doc, result, prefix)
 	if doc._ignore then
 		return result
 	end
-	doc._dirty = false
+	if not is_keep_dirty then
+		doc._dirty = false
+	end
 	local lastversion = doc._lastversion
 	local changes = doc._changes
 	local keys = doc._keys
@@ -227,8 +229,10 @@ function tracedoc.commit(doc, result, prefix)
 	if next(keys) ~= nil then
 		for k in next, keys do
 			local v = changes[k]
-			keys[k] = nil
-			changes[k] = nil
+			if not is_keep_dirty then
+				keys[k] = nil
+				changes[k] = nil
+			end
 			if lastversion[k] ~= v then
 				dirty = true
 				if result then
@@ -236,7 +240,9 @@ function tracedoc.commit(doc, result, prefix)
 					result[key] = v == nil and NULL or v
 					result._n = (result._n or 0) + 1
 				end
-				lastversion[k] = v
+				if not is_keep_dirty then
+					lastversion[k] = v
+				end
 			end
 		end
 	end
@@ -246,10 +252,10 @@ function tracedoc.commit(doc, result, prefix)
 				local key = prefix and prefix .. k or k
 				local change
 				if v._opaque then
-					change = tracedoc.commit(v)
+					change = _commit(is_keep_dirty, v)
 				else
 					local n = result._n
-					tracedoc.commit(v, result, key .. ".")
+					_commit(is_keep_dirty, v, result, key .. ".")
 					if n ~= result._n then
 						change = true
 					end
@@ -262,12 +268,20 @@ function tracedoc.commit(doc, result, prefix)
 					dirty = true
 				end
 			else
-				local change = tracedoc.commit(v)
+				local change = _commit(is_keep_dirty, v)
 				dirty = dirty or change
 			end
 		end
 	end
 	return result or dirty
+end
+
+function tracedoc.commit(doc, result, prefix)
+	return _commit(false, doc, result, prefix)
+end
+
+function tracedoc.get_changes(doc, result, prefix)
+	return _commit(true, doc, result, prefix)
 end
 
 function tracedoc.ignore(doc, enable)
