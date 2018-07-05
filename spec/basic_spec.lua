@@ -129,12 +129,20 @@ describe("basic tests", function()
     test("table changes", function()
         tracedoc.commit(doc)
 
-        doc.skills = {1, 2}
-        doc.pet = {
+        local skills = {1, 2}
+        local pet = {
             name = "cat",
             level = 11,
             hp = 100,
         }
+        doc.pet = pet
+        doc.skills = skills
+
+        -- table will be copied when assigning to a tracedoc
+        -- so the table get from the tracedoc will be different from originals
+        assert.are_not.equal(doc.pet, pet)
+        assert.are_not.equal(doc.skills, skills)
+
         local changes = tracedoc.commit(doc, {})
 
         assert.are.equal(changes["skills.1"], 1)
