@@ -404,7 +404,7 @@ local function _mapchange(doc, set, c, skip_commit)
 		-- a lot of changes
 		for key, funcs in pairs(set.watching) do
 			local v = changes[key]
-			if v then
+			if v ~= nil then
 				do_funcs(doc, funcs, v)
 			end
 		end

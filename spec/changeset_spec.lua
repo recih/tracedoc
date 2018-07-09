@@ -231,4 +231,14 @@ describe("changeset tests", function()
         tracedoc.mapchange(doc, mapping)
         assert.spy(spies["issue#4"]).was_called()
     end)
+
+    test("mapchange may not trigger the handler when assign a field to false", function()
+        doc.is_dead = false
+
+        local mapping = tracedoc.changeset {
+            { create_spy("assign_false", function(doc, d, e) _print("changed") end), "is_dead" }
+        }
+        tracedoc.mapchange(doc, mapping)
+        assert.spy(spies["assign_false"]).was_called()
+    end)
 end)
