@@ -234,4 +234,26 @@ describe("basic tests", function()
         local changes = tracedoc.commit(doc, {})
         assert.are.same(changes, {})
     end)
+
+    test("table with metadata", function()
+        tracedoc.commit(doc)
+
+        local t = {}
+        setmetatable(t, {})
+        doc.table_with_meta = t
+
+        -- table with metadata kept unchanged after assigned to tracedoc
+        local changes = tracedoc.commit(doc, {})
+        assert.are.equal(changes.table_with_meta, t)
+
+        -- change inside this table won't be notified
+        t.name = "test"
+        changes = tracedoc.commit(doc, {})
+        assert.are.same(changes, {})
+
+        -- force mark as changed
+        tracedoc.mark_changed(doc, "table_with_meta")
+        changes = tracedoc.commit(doc, {})
+        assert.are.equal(changes.table_with_meta, t)
+    end)
 end)

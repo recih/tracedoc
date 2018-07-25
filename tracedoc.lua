@@ -182,6 +182,7 @@ function tracedoc.new(init)
 		_dirty = false,
 		_parent = false,
 		_changes = {},
+		_force_changed = {},
 		_keys = {},
 		_lastversion = {},
 	}
@@ -224,16 +225,19 @@ local function _commit(is_keep_dirty, doc, result, prefix)
 	end
 	local lastversion = doc._lastversion
 	local changes = doc._changes
+	local force_changed = doc._force_changed
 	local keys = doc._keys
 	local dirty = false
 	if next(keys) ~= nil then
 		for k in next, keys do
 			local v = changes[k]
+			local is_force_change = force_changed[k]
 			if not is_keep_dirty then
 				keys[k] = nil
 				changes[k] = nil
+				force_changed[k] = nil
 			end
-			if lastversion[k] ~= v then
+			if lastversion[k] ~= v or is_force_change then
 				dirty = true
 				if result then
 					local key = prefix and prefix .. k or k
@@ -290,6 +294,12 @@ end
 
 function tracedoc.opaque(doc, enable)
 	rawset(doc, "_opaque", enable)
+end
+
+function tracedoc.mark_changed(doc, k)
+	local v = doc[k]
+	doc_change(doc, k, v)
+	doc._force_changed[k] = true
 end
 
 ----- change set
