@@ -128,7 +128,7 @@ local function doc_change(doc, k, v)
 	end
 	if type(v) == "table" then
 		local vt = getmetatable(v)
-		if vt == nil then
+		if vt == nil or vt == tracedoc_type then
 			local lv = doc._lastversion[k]
 			if getmetatable(lv) ~= tracedoc_type then
 				-- last version is not a table, new a empty one

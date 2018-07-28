@@ -256,4 +256,25 @@ describe("basic tests", function()
         changes = tracedoc.commit(doc, {})
         assert.are.equal(changes.table_with_meta, t)
     end)
+
+    test("assign a tracedoc into a tracedoc", function()
+        tracedoc.commit(doc)
+
+        local list = {}
+        for i = 1, 5 do
+            list[i] = { id = i, name = "name" .. i }
+        end
+        doc.list = list
+
+        local changes = tracedoc.commit(doc, {})
+
+        doc.list2 = {}
+        doc.list2[1] = doc.list[1]  -- doc.list[1] is tracedoc type
+        doc.list2[2] = doc.list[3]  -- doc.list[3] is tracedoc type
+        changes = tracedoc.commit(doc, {})
+        assert.are.equal(changes["list2.1.id"], list[1].id)
+        assert.are.equal(changes["list2.1.name"], list[1].name)
+        assert.are.equal(changes["list2.2.id"], list[3].id)
+        assert.are.equal(changes["list2.2.name"], list[3].name)
+    end)
 end)
