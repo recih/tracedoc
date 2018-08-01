@@ -276,5 +276,13 @@ describe("basic tests", function()
         assert.are.equal(changes["list2.1.name"], list[1].name)
         assert.are.equal(changes["list2.2.id"], list[3].id)
         assert.are.equal(changes["list2.2.name"], list[3].name)
+
+        doc.list2[1] = doc.list[2]  -- doc.list[2] is tracedoc type
+        doc.list2[2] = doc.list[4]  -- doc.list[4] is tracedoc type
+        changes = tracedoc.commit(doc, {})
+        assert.are.equal(changes["list2.1.id"], list[2].id)
+        assert.are.equal(changes["list2.1.name"], list[2].name)
+        assert.are.equal(changes["list2.2.id"], list[4].id)
+        assert.are.equal(changes["list2.2.name"], list[4].name)
     end)
 end)
