@@ -115,21 +115,24 @@ describe("changeset tests", function()
         assert.spy(spies.hp).was_called_with(doc, plain_data.hp)
         assert.spy(spies.hp_max).was_called_with(doc, plain_data.hp_max, nil)
         assert.spy(spies.name).was_called_with(doc, plain_data.name, plain_data.title)
-        clear_print_buf();
+        clear_print_buf()
+        reset_spies()
 
         doc.hp = doc.hp + 10
         tracedoc.mapchange(doc, mapping)
         assert.spy(spies.hp).was_called_with(doc, plain_data.hp + 10)
         assert.are.same(get_print_content(), trim_lines(
             [[hp = 110]]))
-        clear_print_buf();
+        clear_print_buf()
+        reset_spies()
 
         doc.title = "Super Man"
         tracedoc.mapchange(doc, mapping)
         assert.spy(spies.name).was_called_with(doc, plain_data.name, "Super Man")
         assert.are.same(get_print_content(), trim_lines(
             [[name = Player - Super Man]]))
-        clear_print_buf();     
+        clear_print_buf() 
+        reset_spies()
 
         doc.items = {1, 2, 3}
         tracedoc.mapchange(doc, mapping)
@@ -137,6 +140,7 @@ describe("changeset tests", function()
         assert.are.same(get_print_content(), trim_lines(
             [[items count = 3]]))
         clear_print_buf()
+        reset_spies()
 
         doc.buff = { hp_max_modify = 100}
         tracedoc.mapchange(doc, mapping)
@@ -144,6 +148,7 @@ describe("changeset tests", function()
         assert.are.same(get_print_content(), trim_lines(
             [[hp_max = 200]]))
         clear_print_buf()
+        reset_spies()
 
         -- filter LEVEL tag
         tracedoc.mapupdate(doc, mapping, "LEVEL")
@@ -151,11 +156,13 @@ describe("changeset tests", function()
         assert.are.same(get_print_content(), trim_lines(
             [[level = 10]]))
         clear_print_buf()
+        reset_spies()
 
         -- filter no tag
         tracedoc.mapupdate(doc, mapping, "")
         assert.spy(spies.no_tag).was_called()
-        clear_print_buf();
+        clear_print_buf()
+        reset_spies()
 
         -- filter all tag
         tracedoc.mapupdate(doc, mapping)
@@ -183,6 +190,7 @@ describe("changeset tests", function()
         assert.are.same(get_print_content(), trim_lines(
             [[hp_max = 100]]))
         clear_print_buf()
+        reset_spies()
 
         doc.buff = { hp_max_modify = 100 }  -- buff.hp_max_modify added
         tracedoc.mapchange(doc, mapping)
@@ -190,6 +198,7 @@ describe("changeset tests", function()
         assert.are.same(get_print_content(), trim_lines(
             [[hp_max = 200]]))
         clear_print_buf()
+        reset_spies()
     end)
 
     test("support for apply changes to multiple changesets", function()
@@ -219,12 +228,14 @@ describe("changeset tests", function()
         assert.are.same(get_print_content(), trim_lines(
             [[mapping1: hp = 100]]))
         clear_print_buf()
+        reset_spies()
 
         tracedoc.mapchange_without_commit(doc, mapping2, changes)
         assert.spy(spies.hp2).was_called()
         assert.are.same(get_print_content(), trim_lines(
             [[mapping2: hp = 100]]))
         clear_print_buf()
+        reset_spies()
     end)
 
     test("for issue #4", function()
@@ -273,8 +284,8 @@ describe("changeset tests", function()
         assert.spy(spies["root1"]).was_called()
         assert.spy(spies["root2"]).was_called()
         assert.spy(spies["root3"]).was_called()
-
         reset_spies()
+        
         tracedoc.mapupdate(doc, mapping, "ROOT")
         assert.spy(spies["root1"]).was_called()
         assert.spy(spies["root2"]).was_not_called()
