@@ -333,8 +333,9 @@ end
 function tracedoc.changeset(map)
 	local set = {
 		watching_n = 0,
-		watching = {} ,
-		mapping = {} ,
+		watching = {},
+		root_watching = {},
+		mapping = {},
 		keys = {},
 		tags = {},
 	}
@@ -347,8 +348,11 @@ function tracedoc.changeset(map)
 		end
 
 		local n = table_len(v)
-		assert(n >=2 and type(v[1]) == "function")
-		if n == 2 then
+		assert(n >= 1 and type(v[1]) == "function")
+		if n == 1 then
+			local f = v[1]
+			table.insert(set.root_watching, f)
+		elseif n == 2 then
 			local f = v[1]
 			local k = v[2]
 			local tq = type(set.watching[k])
@@ -440,6 +444,8 @@ local function _mapchange(doc, set, c, skip_commit)
 			end
 		end
 	end
+	-- root watching
+	do_funcs(doc, set.root_watching)
 	return changes
 end
 

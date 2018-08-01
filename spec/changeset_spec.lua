@@ -41,6 +41,12 @@ describe("changeset tests", function()
         spies = {}
     end
 
+    local function reset_spies()
+        for k, v in pairs(spies) do
+            v:clear()
+        end
+    end
+
     before_each(function()
         doc = tracedoc.new(plain_data) 
         clear_print_buf()
@@ -240,5 +246,38 @@ describe("changeset tests", function()
         }
         tracedoc.mapchange(doc, mapping)
         assert.spy(spies["assign_false"]).was_called()
+    end)
+
+    test("support for mapchange on root tracedoc", function()
+        local mapping = tracedoc.changeset {
+            {
+                "ROOT",
+                create_spy("root1", function(root)
+                    assert.are.equals(root, doc)
+                end),
+            },
+            {
+                "OTHER",
+                create_spy("root2", function(root)
+                    assert.are.equals(root, doc)
+                end),
+            },
+            {
+                create_spy("root3", function(root)
+                    assert.are.equals(root, doc)
+                end),
+            },
+        }
+
+        tracedoc.mapchange(doc, mapping)
+        assert.spy(spies["root1"]).was_called()
+        assert.spy(spies["root2"]).was_called()
+        assert.spy(spies["root3"]).was_called()
+
+        reset_spies()
+        tracedoc.mapupdate(doc, mapping, "ROOT")
+        assert.spy(spies["root1"]).was_called()
+        assert.spy(spies["root2"]).was_not_called()
+        assert.spy(spies["root3"]).was_not_called()
     end)
 end)
