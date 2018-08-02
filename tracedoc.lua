@@ -475,4 +475,10 @@ function tracedoc.mapupdate(doc, set, filter_tag)
 	end
 end
 
+function tracedoc.check_type(doc)
+	if type(doc) ~= "table" then return false end
+	local mt = getmetatable(doc)
+	return mt == tracedoc_type
+end
+
 return tracedoc
