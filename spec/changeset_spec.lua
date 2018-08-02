@@ -285,10 +285,71 @@ describe("changeset tests", function()
         assert.spy(spies["root2"]).was_called()
         assert.spy(spies["root3"]).was_called()
         reset_spies()
-        
+
         tracedoc.mapupdate(doc, mapping, "ROOT")
         assert.spy(spies["root1"]).was_called()
         assert.spy(spies["root2"]).was_not_called()
         assert.spy(spies["root3"]).was_not_called()
+    end)
+
+    test("mapupdate support for non-tracedoc table", function()
+        local mapping = tracedoc.changeset {
+            {
+                "LEVEL",
+                create_spy("level", function(doc, level)
+                end),
+                "level",
+            },
+            {
+                "HP",
+                create_spy("hp", function(doc, hp)
+                end),
+                "hp",
+            },
+            {
+                create_spy("pet", function(doc, name)
+                    _print("name = " .. tostring(name))
+                end),
+                "pet.name",
+            },
+        }
+
+        local data = {
+            level = 100,
+            hp = 500,
+            pet = {
+                name = "dog",
+            }
+        }
+
+        -- test for plain table
+        tracedoc.mapupdate(data, mapping)
+        assert.spy(spies["level"]).was_called()
+        assert.spy(spies["hp"]).was_called()
+        assert.spy(spies["pet"]).was_called()
+        assert.are.same(get_print_content(), trim_lines(
+            [[name = dog]]))
+        reset_spies()
+        clear_print_buf()
+
+        -- test for empty table
+        tracedoc.mapupdate({}, mapping)
+        assert.spy(spies["level"]).was_called()
+        assert.spy(spies["hp"]).was_called()
+        assert.spy(spies["pet"]).was_called()
+        assert.are.same(get_print_content(), trim_lines(
+            [[name = nil]]))
+        reset_spies()
+        clear_print_buf()
+
+        -- test for nil
+        tracedoc.mapupdate(nil, mapping)
+        assert.spy(spies["level"]).was_called()
+        assert.spy(spies["hp"]).was_called()
+        assert.spy(spies["pet"]).was_called()
+        assert.are.same(get_print_content(), trim_lines(
+            [[name = nil]]))
+        reset_spies()
+        clear_print_buf()
     end)
 end)
