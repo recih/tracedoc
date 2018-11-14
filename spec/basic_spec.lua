@@ -296,4 +296,25 @@ describe("basic tests", function()
         assert.is_falsy(tracedoc.check_type("test"))
         assert.is_falsy(tracedoc.check_type(nil))
     end)
+
+    test("support tracedoc.unpack()", function()
+        tracedoc.commit(doc)
+
+        local function concat(t, start, len)
+            local unpack = table.unpack
+            if tracedoc.check_type(t) then
+                unpack = tracedoc.unpack
+            end
+            return table.concat({unpack(t, start, len)}, ", ")
+        end
+
+        local list = {}
+        for i = 1, 5 do
+            list[i] = tostring(i)
+        end
+        doc.list = list
+
+        assert.are.equal(concat(list, 1, 5), concat(doc.list, 1, 5))
+        assert.are.equal(concat(list, 2, 4), concat(doc.list, 2, 4))
+    end)
 end)

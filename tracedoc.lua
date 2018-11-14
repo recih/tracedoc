@@ -164,6 +164,18 @@ local function doc_change(doc, k, v)
 	doc._keys[k] = true
 end
 
+local function doc_unpack(doc, start, len)
+	if not tracedoc.check_type(doc) then return table.unpack(doc, start, len) end
+
+	start = start or 1
+	len = len or tracedoc.len(doc)
+	local t = {}
+	for i = start, len do
+		t[i - start + 1] = doc[i]
+	end
+	return table.unpack(t, 1, len - start + 1)
+end
+
 local doc_mt = {
 	__newindex = doc_change,
 	__index = doc_read,
@@ -176,6 +188,7 @@ local doc_mt = {
 tracedoc.pairs = doc_pairs
 tracedoc.ipairs = doc_ipairs
 tracedoc.len = doc_len
+tracedoc.unpack = doc_unpack
 
 function tracedoc.new(init)
 	local doc = {
