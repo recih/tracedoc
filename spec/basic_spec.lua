@@ -15,6 +15,7 @@ describe("basic tests", function()
             level = 10,
             hp = 100,
         },
+        dead = false, 
     }
     local doc = nil
 
