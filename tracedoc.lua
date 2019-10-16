@@ -253,7 +253,7 @@ local function _commit(is_keep_dirty, doc, result, prefix)
 			if lastversion[k] ~= v or is_force_change then
 				dirty = true
 				if result then
-					local key = prefix and prefix .. k or k
+					local key = prefix and prefix .. k or tostring(k)
 					result[key] = v == nil and NULL or v
 					result._n = (result._n or 0) + 1
 				end
@@ -266,7 +266,7 @@ local function _commit(is_keep_dirty, doc, result, prefix)
 	for k,v in pairs(lastversion) do
 		if getmetatable(v) == tracedoc_type and v._dirty then
 			if result then
-				local key = prefix and prefix .. k or k
+				local key = prefix and prefix .. k or tostring(k)
 				local change
 				if v._opaque then
 					change = _commit(is_keep_dirty, v)
@@ -317,19 +317,25 @@ end
 
 ----- change set
 
+local function buildkey(key)
+	return key:gsub("%[(-?%d+)%]", ".%1"):gsub("^%.+", "")
+end
+
 local function genkey(keys, key)
 	if keys[key] then
 		return
 	end
-	key = key:gsub("(%.)(%d+)","[%2]")
-	key = key:gsub("^(%d+)","[%1]")
+
 	local code = [[return function(doc)
 		local success, ret = pcall(function(doc)
-			return doc.%s
+			return doc%s
 		end, doc)
-		return success and ret or nil 
+		if success then
+			return ret
+		end
 	end]]
-	keys[key] = assert(load(code:format(key)))()
+	local path = ("."..key):gsub("%.(-?%d+)","[%1]")
+	keys[key] = assert(load(code:format(path)))()
 end
 
 local function insert_tag(tags, tag, item, n)
@@ -353,6 +359,12 @@ function tracedoc.changeset(map)
 		tags = {},
 	}
 	for _,v in ipairs(map) do
+		for i, k in ipairs(v) do
+			if type(k) == "string" then
+				v[i] = buildkey(k)
+			end
+		end
+		
 		local tag = v[1]
 		if type(tag) == "string" then
 			v = insert_tag(set.tags, tag, v, 2)

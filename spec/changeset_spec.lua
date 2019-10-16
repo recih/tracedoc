@@ -1,7 +1,15 @@
 local tracedoc = require("tracedoc")
 
 describe("changeset tests", function()
+    local match = require("luassert.match")
     local plain_data = {
+        [-1] = {
+            name = "-1",
+        },
+        [1] = {
+            name = "1"
+        },
+        array = {1, 2, 3},
         level = 10,
         name = "Player",
         title = "",
@@ -108,6 +116,40 @@ describe("changeset tests", function()
                 end),
                 "hp",
             },
+            {
+                "-1",
+                create_spy(-1, function (doc, name)
+                    _print("name = " .. name)
+                end),
+                "[-1].name",
+            }, 
+            {
+                "1",
+                create_spy(1, function (doc, name)
+                    _print("name = " .. name)
+                end),
+                "[1].name",
+            }, 
+            {
+                "ARRAY",
+                create_spy("array", function (doc, array)
+                    local str = {}
+                    for i, v in tracedoc.ipairs(array) do
+                        str[#str + 1] = tostring(v)
+                    end
+                    str = table.concat(str, ", ")
+                    _print("array = " .. str)
+                end),
+                "array",
+            }, 
+            {
+                "numbers",
+                create_spy("numbers", function(doc, name1, name_1)
+                    _print("doc[1].name = "..name1..", doc[-1].name = "..name_1)
+                end),
+                "[1].name",
+                "[-1].name",
+            },
         }
 
         tracedoc.mapchange(doc, mapping)
@@ -115,6 +157,17 @@ describe("changeset tests", function()
         assert.spy(spies.hp).was_called_with(doc, plain_data.hp)
         assert.spy(spies.hp_max).was_called_with(doc, plain_data.hp_max, nil)
         assert.spy(spies.name).was_called_with(doc, plain_data.name, plain_data.title)
+        assert.spy(spies[-1]).was_called_with(doc, plain_data[-1].name)
+        assert.spy(spies[1]).was_called_with(doc, plain_data[1].name)
+        assert.spy(spies.numbers).was_called_with(doc, plain_data[1].name, plain_data[-1].name)
+
+        clear_print_buf()
+        reset_spies()
+
+        doc.array[4] = 4
+        tracedoc.mapchange(doc, mapping)
+        assert.spy(spies.array).was.called()
+        assert.are.same(trim_lines([[array = 1, 2, 3, 4]]), get_print_content())
         clear_print_buf()
         reset_spies()
 
@@ -249,7 +302,7 @@ describe("changeset tests", function()
         assert.spy(spies["issue#4"]).was_called()
     end)
 
-    test("mapchange may not trigger the handler when assign a field to false", function()
+    test("mapchange should trigger the handler when assign a field to false", function()
         doc.is_dead = false
 
         local mapping = tracedoc.changeset {
