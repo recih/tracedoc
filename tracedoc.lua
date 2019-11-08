@@ -36,6 +36,9 @@ local function doc_unpack(doc, i, j)
 	return table.unpack(doc._stage, i, j)
 end
 
+local function doc_concat(doc, sep, i, j)
+	return table.concat(doc._stage, sep, i, j)
+end
 
 local function doc_change(doc, k, v)
 	if not doc._dirty then
@@ -92,9 +95,11 @@ local function doc_change(doc, k, v)
 end
 
 tracedoc.len = doc_len
+tracedoc.next = doc_next
 tracedoc.pairs = doc_pairs
 tracedoc.ipairs = doc_ipairs
 tracedoc.unpack = doc_unpack
+tracedoc.concat = doc_concat
 
 function tracedoc.new(init)
 	local doc_stage = {}

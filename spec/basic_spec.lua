@@ -318,4 +318,44 @@ describe("basic tests", function()
         assert.are.equal(concat(list, 1, 5), concat(doc.list, 1, 5))
         assert.are.equal(concat(list, 2, 4), concat(doc.list, 2, 4))
     end)
+
+    test("support tracedoc.next()", function()
+        local function dump(doc)
+            local data = {}
+            for k, v in tracedoc.next, doc do
+                if type(v) == "table" then
+                    data[k] = dump(v)
+                else
+                    data[k] = v
+                end
+            end
+            return data
+        end
+
+        -- before commit
+        local dump_data = dump(doc)
+        assert.are.same(dump_data, plain_data)
+
+        -- private data should not be accessed by next
+        assert.is_nil(dump_data._parent)
+        assert.is_nil(dump_data._dirty)
+        assert.is_nil(dump_data._changes)
+
+        -- after commit
+        tracedoc.commit(doc)
+        assert.are.same(dump(doc), plain_data)
+    end)
+
+    test("support tracedoc.concat()", function()
+        tracedoc.commit(doc)
+
+        local list = {}
+        for i = 1, 5 do
+            list[i] = tostring(i)
+        end
+        doc.list = list
+
+        assert.are.equal(table.concat(list, 1, 5), tracedoc.concat(doc.list, 1, 5))
+        assert.are.equal(table.concat(list, 2, 4), tracedoc.concat(doc.list, 2, 4))
+    end)
 end)
